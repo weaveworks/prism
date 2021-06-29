@@ -2,6 +2,7 @@
 
 ## master / unreleased
 
+* [CHANGE] Querier / ruler: Change `-querier.max-fetched-chunks-per-query` configuration to limit to maximum number of chunks that can be fetched in a single query. The number of chunks fetched by ingesters AND long-term storare combined should not exceed the value configured on `-querier.max-fetched-chunks-per-query`. #4260
 * [BUGFIX] Table-Manager: fix schema prefix checking for overlapping prefixes #4192
 
 ## 1.10.0-rc.0 / 2021-06-28
@@ -72,7 +73,6 @@
 * [BUGFIX] Store-gateway: when blocks sharding is enabled, do not load all blocks in each store-gateway in case of a cold startup, but load only blocks owned by the store-gateway replica. #4271
 * [BUGFIX] Memberlist: fix to setting the default configuration value for `-memberlist.retransmit-factor` when not provided. This should improve propagation delay of the ring state (including, but not limited to, tombstones). Note that if the configuration is already explicitly given, this fix has no effect. #4269
 * [BUGFIX] Querier: Fix issue where samples in a chunk might get skipped by batch iterator. #4218
-
 ## Blocksconvert
 
 * [ENHANCEMENT] Scanner: add support for DynamoDB (v9 schema only). #3828
