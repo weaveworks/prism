@@ -2,6 +2,8 @@
 
 ## master / unreleased
 
+* [BUGFIX] Table-Manager: fix schema prefix checking for overlapping prefixes #4192
+
 ## 1.10.0-rc.0 / 2021-06-28
 
 * [CHANGE] Enable strict JSON unmarshal for `pkg/util/validation.Limits` struct. The custom `UnmarshalJSON()` will now fail if the input has unknown fields. #4298
