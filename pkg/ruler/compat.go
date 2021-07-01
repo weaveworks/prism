@@ -200,6 +200,11 @@ func DefaultTenantManagerFactory(cfg Config, p Pusher, q storage.Queryable, engi
 		Help: "Number of failed queries by ruler.",
 	})
 
+	// Make sure that queryable reports errors as expected by our MetricsQueryFunc.
+	// Note that if queryable is already wrapped into ErrorTranslateQueryable, wrapping it again
+	// is fine (see TestApiStatusCodesDoubleWrapper in querier package).
+	q = querier.NewErrorTranslateQueryable(q)
+
 	return func(ctx context.Context, userID string, notifier *notifier.Manager, logger log.Logger, reg prometheus.Registerer) RulesManager {
 		return rules.NewManager(&rules.ManagerOptions{
 			Appendable:      NewPusherAppendable(p, userID, overrides, totalWrites, failedWrites),
