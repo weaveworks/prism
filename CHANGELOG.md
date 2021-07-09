@@ -4,6 +4,16 @@
 * [FEATURE] Ruler: Add new `-ruler.query-stats-enabled` which when enabled will report the `cortex_ruler_query_seconds_total` as a per-user metric that tracks the sum of the wall time of executing queries in the ruler in seconds. #4317
 
 * [CHANGE] Querier / ruler: Change `-querier.max-fetched-chunks-per-query` configuration to limit to maximum number of chunks that can be fetched in a single query. The number of chunks fetched by ingesters AND long-term storare combined should not exceed the value configured on `-querier.max-fetched-chunks-per-query`. #4260
+* [FEATURE] Add configuration options in order to register an instance's IPv6 address in the ring instead of IPv4. IPv4 still remains the default option. #4339
+  * New flags added:
+    * `-compactor.instance-addr-protocol`
+    * `-store-gateway.sharding-ring.instance-addr-protocol`
+    * `-ingester.lifecycler.protocol`
+    * `-frontend.instance-addr-protocol`
+    * `-ruler.instance-addr-protocol`
+    * `-alertmanager.sharding-ring.instance-addr-protocol`
+    * `-compactor.instance-addr-protocol`
+    * `-store-gateway.sharding-ring.instance-addr-protocol`
 * [ENHANCEMENT] Add timeout for waiting on compactor to become ACTIVE in the ring. #4262
 * [ENHANCEMENT] Reduce memory used by streaming queries, particularly in ruler. #4341
 * [ENHANCEMENT] Ring: allow experimental configuration of disabling of heartbeat timeouts by setting the relevant configuration value to zero. Applies to the following: #4342

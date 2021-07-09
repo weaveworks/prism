@@ -702,6 +702,10 @@ lifecycler:
   # CLI flag: -ingester.lifecycler.interface
   [interface_names: <list of string> | default = [eth0 en0]]
 
+  # Type of IP address to advertise in the ring.
+  # CLI flag: -ingester.lifecycler.protocol
+  [protocol: <string> | default = "ipv4"]
+
   # Duration to sleep for before exiting, to ensure metrics are scraped.
   # CLI flag: -ingester.final-sleep
   [final_sleep: <duration> | default = 30s]
@@ -1065,6 +1069,10 @@ grpc_client_config:
 # query-frontend.
 # CLI flag: -frontend.instance-interface-names
 [instance_interface_names: <list of string> | default = [eth0 en0]]
+
+# Type of IP address to advertise in the ring.
+# CLI flag: -frontend.instance-addr-protocol
+[instance_addr_protocol: <string> | default = "ipv4"]
 
 # URL of downstream Prometheus.
 # CLI flag: -frontend.downstream-url
@@ -1594,6 +1602,10 @@ ring:
   # CLI flag: -ruler.ring.instance-interface-names
   [instance_interface_names: <list of string> | default = [eth0 en0]]
 
+  # Type of IP address to advertise in the ring.
+  # CLI flag: -ruler.instance-addr-protocol
+  [instance_addr_protocol: <string> | default = "ipv4"]
+
   # Number of tokens for each ruler.
   # CLI flag: -ruler.ring.num-tokens
   [num_tokens: <int> | default = 128]
@@ -1928,6 +1940,10 @@ sharding_ring:
   # Name of network interface to read address from.
   # CLI flag: -alertmanager.sharding-ring.instance-interface-names
   [instance_interface_names: <list of string> | default = [eth0 en0]]
+
+  # Type of IP address to advertise in the ring.
+  # CLI flag: -alertmanager.sharding-ring.instance-addr-protocol
+  [instance_addr_protocol: <string> | default = "ipv4"]
 
   # The availability zone where this instance is running. Required if
   # zone-awareness is enabled.
@@ -5201,6 +5217,10 @@ sharding_ring:
   # CLI flag: -compactor.ring.instance-interface-names
   [instance_interface_names: <list of string> | default = [eth0 en0]]
 
+  # Type of IP address to advertise in the ring.
+  # CLI flag: -compactor.instance-addr-protocol
+  [instance_addr_protocol: <string> | default = "ipv4"]
+
   # Timeout for waiting on compactor to become ACTIVE in the ring.
   # CLI flag: -compactor.ring.wait-active-instance-timeout
   [wait_active_instance_timeout: <duration> | default = 10m]
@@ -5295,6 +5315,10 @@ sharding_ring:
   # Name of network interface to read address from.
   # CLI flag: -store-gateway.sharding-ring.instance-interface-names
   [instance_interface_names: <list of string> | default = [eth0 en0]]
+
+  # Type of IP address to advertise in the ring.
+  # CLI flag: -store-gateway.sharding-ring.instance-addr-protocol
+  [instance_addr_protocol: <string> | default = "ipv4"]
 
   # The availability zone where this instance is running. Required if
   # zone-awareness is enabled.
