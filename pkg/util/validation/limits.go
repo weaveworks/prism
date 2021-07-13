@@ -69,6 +69,9 @@ type Limits struct {
 	MaxLocalMetadataPerMetric           int `yaml:"max_metadata_per_metric" json:"max_metadata_per_metric"`
 	MaxGlobalMetricsWithMetadataPerUser int `yaml:"max_global_metadata_per_user" json:"max_global_metadata_per_user"`
 	MaxGlobalMetadataPerMetric          int `yaml:"max_global_metadata_per_metric" json:"max_global_metadata_per_metric"`
+	// Exemplars
+	MaxExemplarsPerUser       int `yaml:"max_exemplars_per_user" json:"max_exemplars_per_user"`
+	MaxGlobalExemplarsPerUser int `yaml:"max_global_exemplars_per_user" json:"max_global_exemplars_per_user"`
 
 	// Querier enforced limits.
 	MaxChunksPerQueryFromStore   int            `yaml:"max_chunks_per_query" json:"max_chunks_per_query"` // TODO Remove in Cortex 1.12.
@@ -150,6 +153,9 @@ func (l *Limits) RegisterFlags(f *flag.FlagSet) {
 	f.IntVar(&l.MaxLocalMetadataPerMetric, "ingester.max-metadata-per-metric", 10, "The maximum number of metadata per metric, per ingester. 0 to disable.")
 	f.IntVar(&l.MaxGlobalMetricsWithMetadataPerUser, "ingester.max-global-metadata-per-user", 0, "The maximum number of active metrics with metadata per user, across the cluster. 0 to disable. Supported only if -distributor.shard-by-all-labels is true.")
 	f.IntVar(&l.MaxGlobalMetadataPerMetric, "ingester.max-global-metadata-per-metric", 0, "The maximum number of metadata per metric, across the cluster. 0 to disable.")
+	f.IntVar(&l.MaxExemplarsPerUser, "ingester.max-exemplars-per-user", 0, "The maximum number of exemplars per user, per ingester. 0 to disable.")
+	f.IntVar(&l.MaxGlobalExemplarsPerUser, "ingester.max-global-exemplars-per-user", 0, "The maximum number of exemplars per user, across the cluster. This limit is only supported when -distributor.shard-by-all-labels is true and shuffle sharding is used for the tenant, because then data is evenly distributed across a known number of ingesters. 0 to disable.")
+
 	f.IntVar(&l.MaxChunksPerQueryFromStore, "store.query-chunk-limit", 2e6, "Deprecated. Use -querier.max-fetched-chunks-per-query CLI flag and its respective YAML config option instead. Maximum number of chunks that can be fetched in a single query. This limit is enforced when fetching chunks from the long-term storage only. When running the Cortex chunks storage, this limit is enforced in the querier and ruler, while when running the Cortex blocks storage this limit is enforced in the querier, ruler and store-gateway. 0 to disable.")
 	f.IntVar(&l.MaxChunksPerQuery, "querier.max-fetched-chunks-per-query", 0, "Maximum number of chunks that can be fetched in a single query from ingesters and long-term storage. This limit is enforced in the querier, ruler and store-gateway. Takes precedence over the deprecated -store.query-chunk-limit. 0 to disable.")
 	f.IntVar(&l.MaxFetchedSeriesPerQuery, "querier.max-fetched-series-per-query", 0, "The maximum number of unique series for which a query can fetch samples from each ingesters and blocks storage. This limit is enforced in the querier only when running Cortex with blocks storage. 0 to disable")
@@ -384,6 +390,16 @@ func (o *Overrides) MaxGlobalSeriesPerUser(userID string) int {
 // MaxGlobalSeriesPerMetric returns the maximum number of series allowed per metric across the cluster.
 func (o *Overrides) MaxGlobalSeriesPerMetric(userID string) int {
 	return o.getOverridesForUser(userID).MaxGlobalSeriesPerMetric
+}
+
+// MaxLocalExemplarsPerUser returns the maximum number of exemplars allowed to store in a single ingester.
+func (o *Overrides) MaxLocalExemplarsPerUser(userID string) int {
+	return o.getOverridesForUser(userID).MaxExemplarsPerUser
+}
+
+// MaxLocalExemplarsPerUser returns the maximum number of exemplars allowed to store across the cluster.
+func (o *Overrides) MaxGlobalExemplarsPerUser(userID string) int {
+	return o.getOverridesForUser(userID).MaxGlobalExemplarsPerUser
 }
 
 // MaxChunksPerQueryFromStore returns the maximum number of chunks allowed per query when fetching
