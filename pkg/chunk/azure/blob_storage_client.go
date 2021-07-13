@@ -12,6 +12,8 @@ import (
 
 	"github.com/Azure/azure-pipeline-go/pipeline"
 	"github.com/Azure/azure-storage-blob-go/azblob"
+	"github.com/Azure/go-autorest/autorest/adal"
+	"github.com/Azure/go-autorest/autorest/azure/auth"
 
 	"github.com/cortexproject/cortex/pkg/chunk"
 	chunk_util "github.com/cortexproject/cortex/pkg/chunk/util"
@@ -75,7 +77,7 @@ func (c *BlobStorageConfig) RegisterFlagsWithPrefix(prefix string, f *flag.FlagS
 	f.StringVar(&c.Environment, prefix+"azure.environment", azureGlobal, fmt.Sprintf("Azure Cloud environment. Supported values are: %s.", strings.Join(supportedEnvironments, ", ")))
 	f.StringVar(&c.ContainerName, prefix+"azure.container-name", "cortex", "Name of the blob container used to store chunks. This container must be created before running cortex.")
 	f.StringVar(&c.AccountName, prefix+"azure.account-name", "", "The Microsoft Azure account name to be used")
-	f.Var(&c.AccountKey, prefix+"azure.account-key", "The Microsoft Azure account key to use.")
+	f.Var(&c.AccountKey, prefix+"azure.account-key", "The Microsoft Azure account key to use. If not specified, will use Managed Service Identity")
 	f.DurationVar(&c.RequestTimeout, prefix+"azure.request-timeout", 30*time.Second, "Timeout for requests made against azure blob storage.")
 	f.IntVar(&c.DownloadBufferSize, prefix+"azure.download-buffer-size", 512000, "Preallocated buffer size for downloads.")
 	f.IntVar(&c.UploadBufferSize, prefix+"azure.upload-buffer-size", 256000, "Preallocated buffer size for uploads.")
@@ -192,8 +194,42 @@ func (b *BlobStorage) buildContainerURL() (azblob.ContainerURL, error) {
 	return azblob.NewContainerURL(*u, azPipeline), nil
 }
 
+func (b *BlobStorage) getServicePrincipalToken() (*adal.ServicePrincipalToken, error) {
+	env, err := auth.GetSettingsFromEnvironment()
+	if err != nil {
+		return nil, err
+	}
+	conf, err := env.GetClientCredentials()
+	if err == nil {
+		token, err := conf.ServicePrincipalToken()
+		if err == nil {
+			return token, nil
+		}
+	}
+
+	msi := env.GetMSI()
+	msi.Resource = "https://storage.azure.com/"
+	return msi.ServicePrincipalToken()
+}
+
+func (b *BlobStorage) getCredential() (azblob.Credential, error) {
+	if b.cfg.AccountKey.Value != "" {
+		return azblob.NewSharedKeyCredential(b.cfg.AccountName, b.cfg.AccountKey.Value)
+	} else {
+		token, err := b.getServicePrincipalToken()
+		if err != nil {
+			return nil, err
+		}
+		if err := token.RefreshWithContext(context.Background()); err != nil {
+			return nil, err
+		}
+		credential := azblob.NewTokenCredential(token.OAuthToken(), nil)
+		return credential, nil
+	}
+}
+
 func (b *BlobStorage) newPipeline() (pipeline.Pipeline, error) {
-	credential, err := azblob.NewSharedKeyCredential(b.cfg.AccountName, b.cfg.AccountKey.Value)
+	credential, err := b.getCredential()
 	if err != nil {
 		return nil, err
 	}
