@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/go-kit/kit/log/level"
@@ -18,6 +17,7 @@ import (
 	"github.com/weaveworks/common/instrument"
 	"github.com/weaveworks/common/mtime"
 
+	"github.com/cortexproject/cortex/pkg/util"
 	util_log "github.com/cortexproject/cortex/pkg/util/log"
 	"github.com/cortexproject/cortex/pkg/util/services"
 )
@@ -456,7 +456,7 @@ func (m *TableManager) partitionTables(ctx context.Context, descriptions []Table
 		for existingTable := range existingTables {
 			if _, ok := expectedTables[existingTable]; !ok {
 				for tblPrefix := range tablePrefixes {
-					if strings.HasPrefix(existingTable, tblPrefix) {
+					if util.HasPrefixAndRandomNumberOnly(existingTable, tblPrefix) {
 						toDelete = append(toDelete, TableDesc{Name: existingTable})
 						break
 					}
